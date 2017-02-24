@@ -1,0 +1,28 @@
+{
+  "name": "chat-app",
+  "version": "1.0.0",
+  "description": "A simple chat app in nodejs for real-time text chat (with login,logout  & registration)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beingadityak/chat-app.git"
+  },
+  "keywords": [
+    "chat-application",
+    "real-time",
+    "nodejs"
+  ],
+  "author": "beingadityak",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/beingadityak/chat-app/issues"
+  },
+  "homepage": "https://github.com/beingadityak/chat-app#readme",
+  "dependencies": {
+    "express": "^4.14.1",
+    "socket.io": "^1.7.3"
+  }
+}
