@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Chat App</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>-->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.css">
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>
+        <script src="socket.io/socket.io.js"></script>
+        <style>
+            @import url('https://fonts.googleapis.com/css?family=Merienda');
+            html,body {
+                font-family: GillSans, Calibri, Trebuchet, sans-serif;
+                background-color: #fff;
+            }
+            #messageArea{
+                margin-top: 30px;
+                display: none;
+            }
+            .chip-success{
+                background-color: lightgreen;
+            }
+            .chip-danger{
+                background-color: pink;
+            }
+            .chip-info{
+                background-color:#2962ff;
+            }
+            .chip-warning{
+                background-color:#b39ddb;
+            }
+            @media (min-width: 768px){
+              #left {
+                position: absolute;
+                top: 0px;
+                bottom: 0;
+                left: 0;
+                width: 25%;
+                overflow-y: scroll;
+              }
+              #right {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                overflow-y: scroll;
+                width: 75%;
+              }
+            }
+            .alert{
+                padding-top: 7px;
+                padding-left: 7px;
+                width:200px;
+                height:40px;
+                border-radius: 5px;
+                background-color: #ffcdd2;
+                padding: 10px;
+            }
+            .alert2{
+                padding-top: 7px;
+                padding-left: 7px;
+                width:380px;
+                height:40px;
+                border-radius: 5px;
+                background-color: #ffcdd2;
+            }
+            /* label color */
+           .input-field label {
+             color: #ff4081;
+           }
+           /* label focus color */
+           .input-field input[type=text]:focus + label {
+             color: #ff4081;
+           }
+           /* label underline focus color */
+           .input-field input[type=text]:focus {
+             border-bottom: 1px solid #ff4081;
+             box-shadow: 0 1px 0 0 #ff4081;
+           }
+           .input-field .prefix.active {
+                color: #ff4081;
+              }
+            .timers{
+                color:grey;
+                position: absolute;
+                right:20px;
+            }
+        </style>
+    </head>
+    <body>
+
+            <div class="container">
+                <div id="userFormArea">
+                <br/><br /><br /><br /><br /><br /><br />
+                <div id="onErr"></div>
+                <div id="onCheck"></div>
+                    <div class="container">
+                        <div class="card blue-grey darken-1">
+                            <form class="col s12 m6" id="userForm">
+                                <div class="card-content white-text">
+                                    <span class="card-title">Check In</span>
+                                    <div class="input-field">
+                                        <blockquote>
+                                        <i class="material-icons prefix">account_circle</i>
+                                        <input id="username" type="text" class="validate" placeholder="Username">
+                                        <label for="icon_prefix" value="Username:"></label><br />
+                                        </blockquote>
+                                    </div>
+                                </div>
+                                <div class="card-action">
+                                    <button class="btn waves-effect waves-light green" type="submit">Submit
+                                        <i class="material-icons right">send</i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="messageArea">
+                <div class="col s3" id="left">
+                    <ul class="collection fixed" id="users"></ul>
+                </div>
+                <div class="col s9" id="right">
+                    <div class="chat" id="chat"></div>
+                    <div class="card yellow-red hoverable">
+                        <form id="messageForm">
+                            <div class="card-content green-text">
+                                <div class="input-field">
+                                    <blockquote>
+                                      <i class="material-icons prefix">mode_edit</i>
+                                      <textarea id="message" class="materialize-textarea"></textarea>
+                                    </blockquote>
+                                </div>
+                            </div>
+                            <div class="card-action">
+                                <button class="btn waves-effect waves-light green" type="submit">Send
+                                    <i class="material-icons right">send</i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        <script>
+            $(function(){
+                var socket = io.connect();
+                var $messageForm = $('#messageForm');
+                var $message = $('#message');
+                var $chat = $('#chat');
+                var $userForm = $('#userForm');
+                var $userFormArea = $('#userFormArea');
+                var $messageArea = $('#messageArea');
+                var $users = $('#users');
+                var $username = $('#username');
+                var $onErr = $('#onErr');
+                var $onCheck = $('#onCheck');
+                $messageForm.submit(function(e){
+                    e.preventDefault();
+                    socket.emit('send message', $message.val());
+                    $message.val('');
+                });
+                socket.on('new message', function(data){
+                    $chat.append('<div class="chip chip-info right"><strong>'+ data.user +': </strong>'+ data.msg +'</div><br /><br /><div class="timers">Sent&nbsp;<i class="tiny material-icons">done</i>&nbsp;'+ data.sentBytime +'</div></div><br /><br />');
+                });
+                $userForm.submit(function(e){
+                    $('#usn1').remove();
+                    $('#usn2').remove();
+                    if(!$username.val()){
+                        e.preventDefault();
+                        $onErr.show();
+                        $onErr.append('<div class="alert animated fadeInLeft" id="usn1">Please Enter your username!</div>');
+                    }
+                    else{
+                        if($username.val().length < 15){
+                                e.preventDefault();
+                                socket.emit('new user', $username.val(),function(data){
+                                if(data.isValid == true){
+                                    $userFormArea.hide();
+                                    $onErr.hide();
+                                    $onCheck.hide();
+                                    $messageArea.show();
+                                }
+                                else{
+                                    $onCheck.show();
+                                    $onCheck.append('<div class="alert2 animated fadeInLeft" id="usn2">Please Enter another username as it already Exists!</div>');
+                                }
+                            });
+                        }
+                        else{
+                                e.preventDefault();
+                                $onErr.show();
+                                $onErr.append('<div class="alert2 animated fadeInLeft" id="usn2">Please Enter username of less than 15 characters!</div>');
+                            }
+                        $username.val('');
+                    }
+                });
+                socket.on('my users',function(data){
+                    $chat.append('<div class="chip chip-success">'+data.userNew+', joined the chat!</div><br /><br />');
+                });
+                socket.on('disconnectedUser',function(data){
+                    $chat.append('<div class="chip chip-danger">'+data.userNm+', left the chat!</div><br /><br />');
+                });
+                socket.on('get users', function(data){
+                    var html = '';
+                    for(i=0;i<data.length;i++){
+                        html += '<li class="collection-item avatar"><img src="https://www.gravatar.com/avatar/?d=mm&s=128" class="circle"><span class="title">'+data[i]+'</span><p>Online</p><a href="#!" class="secondary-content"><i class="material-icons">grade</i></a></li>';
+                    }
+                    $users.html(html);
+                });
+                var typing = false;
+                var timeout;
+                function timeoutFn(){
+                    typing = false;
+                    socket.emit('typing',false);
+                }
+                $message.keypress(function(e){
+                    if(e.which !== 13){
+                        if(typing == false){
+                            typing = true;
+                            socket.emit('typing',true);
+                        }else{
+                            clearTimeout(timeout);
+                            timeout = setTimeout(timeoutFn, 3000);
+                        }
+                    }
+                });
+                socket.on('isTyping', function(data) {
+                if (data.isTyping) {
+                    $chat.append('<div class="chip chip-warning" id='+data.person+'>'+data.person+',is typing</div><br />');
+                    timeout = setTimeout(timeoutFn, 3000);
+                } else {
+                  $('#'+data.person+'').remove();
+                }
+              });
+            });
+        </script>
+    </body>
+</html>
