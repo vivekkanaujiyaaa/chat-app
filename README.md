@@ -1,4 +1,3 @@
 # Chat App
-A real-time chat app in NodeJS with login &amp; registration
-
+A real-time chat app in NodeJS
 _Built by :_ **Aditya Krishnakumar**
